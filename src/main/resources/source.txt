@@ -1,0 +1,28 @@
+1. Liides Kontrollija sisaldab void-tüüpi meetodit salvestaViivis, mis võtab parameetriteks laenutaja nime (String), teose kirjelduse (String) ja viivise suuruse (double).
+
+2. Klass ViiviseHoiataja realiseerib liidest Kontrollija.
+
+Klassis peab olema ühe double argumendiga konstruktor, mille abil saab määrata lubatud viivise.
+Meetod salvestaViivis peab argumendiks saadud laenutaja nime meelde jätma, kui viivis ületab lubatud viivise piiri ja kui seda nime pole veel salvestatud.
+Meetod getHoiatatavadLaenutajad peab tagastama listi kõigi nende laenutajate nimedega, kelle viivise suurus ületab lubatud piiri.
+3. Klass SuurimaViiviseLeidja realiseerib liidest Kontrollija.
+
+Klassis peab olema void-tüüpi parameetriteta meetod saadaHoiatus, mis prindib ekraanile kõige suurema viivisega laenutaja nime ja tema poolt laenutatud teose kirjelduse.
+Mälu kokkuhoiu mõttes ei tohiks SuurimaViiviseLeidja jätta meelde rohkem andmeid, kui on tarvis suurima viivisega inimesele hoiatuse saatmiseks (see tähendab, et ViiviseHoiataja ning SuurimaViiviseLeidja peaks meetodi salvestaViivis realiseerima erinevalt.) (Vihje: jäta alati meelde vaid suurima viivise andmed.)
+4. Abstraktsel klassil Teos peab olema konstruktor teose kirjelduse (String), teose tähise (String), laenutaja (String) ja päevade arvu (int) määramiseks.
+
+Klassis on abstraktne boolean-tüüpi meetod kasHoidlast, mis näitab, kas teost on vaja tellida hoidlast.
+Samuti on parameetriteta int-tüüpi isendimeetod laenutusaeg, mis tagastab selle teose laenutusaja (ehk mitmeks päevaks teost tähise järgi on lubatud laenutada). Kui tähis on erinev kui roheline, kollane, sinine, puudub, siis tagastatakse 0.
+Samuti on klassis double-tüüpi parameetriteta meetod päevaneViivis, mis tagastab vastavalt tähisele sobiva viivise ühe tähtaega ületanud päeva kohta.
+Samuti on klassis void-tüüpi meetod arvutaViivis, mis võtab parameetriks Kontrollija isendi. Tähtaja ületanud laenutuse korral arvutab meetod viivise suuruse ja laseb kontrollijal selle salvestada (salvestaViivis).
+Samuti on klassis Teos meetod toString, mis aitab kogu teadaolevat infot teose ja selle laenutamise kohta sobivalt kujundada. Muuhulgas peab olema näidatud, kas teost on vaja tellida hoidlast.
+Klass Teos realiseerib liidest Comparable<Teos>, kusjuures compareTo meetod realiseeritakse nii, et teoseid võrreldakse kirjelduse alusel.
+5. Klass Raamat on klassi Teos alamklass. Klassis on konstruktor vajaliku info määramiseks ja vähemalt järgmised meetodid.
+
+Meetod kasHoidlast, mis tagastab true, kui raamatu tähis on kollane või sinine, vastasel juhul tagastatakse false.
+Meetod toString, mis tagastab ülemklassi toString tulemuse koos märkusega, et tegemist on raamatuga.
+6. Klass Ajakiri on klassi Teos alamklass. Klassis on konstruktor vajaliku info määramiseks ja vähemalt järgmised meetodid.
+
+Meetod kasHoidlast, mis tagastab true, kui ajakiri ilmus aastal 2000 või varem, vastasel juhul tagastatakse false.
+Meetod toString, mille ülekatmisel on rakendatud ülemklassi meetodit toString lisades märkuse selle kohta, et tegemist on ajakirjaga.
+7. Peaklass peab olema nimega Peaklass. Klassis peab olema staatiline avalik meetod loeTeosed tagastustüübiga List<Teos>, mis võtab argumendiks failinime ja tagastab selles failis olevad laenutuste andmed. Meetod võib visata erindi (st. meetodi signatuuris võib olla throws Exception). Teoste faili formaat on ülalpool toodud. Teoste arv failis ei ole teada (programm peaks töötama suvalise (ka tühja) failiga). Kui failist lugemist ei õnnestu programmeerida, siis kirjutatagu selles meetodis vastav list programmi sisse (vähendab tulemust 2 punkti võrra).

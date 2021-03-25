@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class TemplateLoader {
+public class ResourceLoader {
   public static String load(final String path) {
     if (path == null || path.isEmpty()) return null;
 
