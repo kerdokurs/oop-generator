@@ -32,6 +32,7 @@ public class Generator {
 
     final Pattern classNamePattern = Pattern.compile("^(Peaklass|(Abstraktsel )?(([Kk]lass(il)?)|Liides) (\\w+))");
     final Pattern implementsPattern = Pattern.compile("([Kk]lass (\\w+))? ?realiseerib liidest (\\w+)");
+    final Pattern extendsPattern = Pattern.compile("(\\w+) alamklass");
 
     for (final String section : sections) {
       Matcher m = classNamePattern.matcher(section);
@@ -40,6 +41,7 @@ public class Generator {
       String classType = "";
       String className = "";
       String implement = "";
+      String extend = "";
 
       if (m.find()) {
 //        System.out.printf("%s, %s, %s%n", m.group(1), m.group(2), m.group(4));
@@ -61,12 +63,21 @@ public class Generator {
         implement = "implements " + m.group(2);
       }
 
+      m = extendsPattern.matcher(section);
+
+      if (m.find()) {
+        extend = "extends " + m.group(1);
+      }
+
       final var aClass = ClassGenerator.generate(
         templates.get("class"),
         isAbstract,
         classType,
         className,
-        "", implement, "", ""
+        extend,
+        implement,
+        "",
+        ""
       );
       System.out.println(aClass);
 
