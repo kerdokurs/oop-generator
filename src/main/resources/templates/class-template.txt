@@ -1,0 +1,5 @@
+public {$abstract} {$class} {$className} {$extends} {$implements} {
+    {$varNames}
+
+    {$methods}
+}
