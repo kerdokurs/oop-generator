@@ -25,6 +25,19 @@ public class Generator {
     loadTemplates();
     loadSource();
     parseSections();
+    writeClasses();
+  }
+
+  private void writeClasses() {
+    classes.forEach((className, source) -> {
+      try {
+        try (FileOutputStream fos = new FileOutputStream("out/" + className + ".java")) {
+          fos.write(source.getBytes());
+        }
+      } catch (final IOException e) {
+        e.printStackTrace();
+      }
+    });
   }
 
   private void parseSections() {
@@ -79,16 +92,10 @@ public class Generator {
         "",
         ""
       );
-      System.out.println(aClass);
 
-      try {
-        final var s = className.split(" ");
-        try (FileOutputStream fos = new FileOutputStream("out/" + s[s.length - 1] + ".java")) {
-          fos.write(aClass.getBytes());
-        }
-      } catch (final IOException e) {
-        e.printStackTrace();
-      }
+      final String[] classNameTokens = className.split(" ");
+
+      classes.put(classNameTokens[classNameTokens.length - 1], aClass);
     }
 
     logger.info("parsing sections finished");
