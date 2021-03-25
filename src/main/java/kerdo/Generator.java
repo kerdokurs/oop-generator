@@ -1,5 +1,7 @@
 package kerdo;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -29,28 +31,52 @@ public class Generator {
     logger.info("parsing sections");
 
     final Pattern classNamePattern = Pattern.compile("^(Peaklass|(Abstraktsel )?(([Kk]lass(il)?)|Liides) (\\w+))");
+    final Pattern implementsPattern = Pattern.compile("([Kk]lass (\\w+))? ?realiseerib liidest (\\w+)");
 
     for (final String section : sections) {
       Matcher m = classNamePattern.matcher(section);
+
+      boolean isAbstract = false;
+      String classType = "";
+      String className = "";
+      String implement = "";
 
       if (m.find()) {
 //        System.out.printf("%s, %s, %s%n", m.group(1), m.group(2), m.group(4));
 //        System.out.println(m.group());
 //        final String classType = m.group(1).equals("Klass") ? "class" : "interface";
-        final boolean isAbstract = m.group(1).toLowerCase().contains("abstrakt");
-        final String classType = m.group(3) != null ? (m.group(3).toLowerCase().contains("klass") ? "class" : "interface") : "";
+        isAbstract = m.group(1).toLowerCase().contains("abstrakt");
+        classType = m.group(3) != null ? (m.group(3).toLowerCase().contains("klass") ? "class" : "interface") : "";
 //        System.out.println(m.group());
-        final String className = m.group(6) != null ? m.group(6) : "class " + m.group();
+        className = m.group(6) != null ? m.group(6) : "class " + m.group();
 //        System.out.printf("abs=%s,type=%s,name=%s%n", isAbstract, classType, className);
 
-        final var aClass = ClassGenerator.generate(
-          templates.get("class"),
-          isAbstract,
-          classType,
-          className,
-          "", "", "", ""
-        );
-        System.out.println(aClass);
+      }
+
+      if ("".equals(className)) continue;
+
+      m = implementsPattern.matcher(section);
+
+      if (m.find()) {
+        implement = "implements " + m.group(2);
+      }
+
+      final var aClass = ClassGenerator.generate(
+        templates.get("class"),
+        isAbstract,
+        classType,
+        className,
+        "", implement, "", ""
+      );
+      System.out.println(aClass);
+
+      try {
+        final var s = className.split(" ");
+        try (FileOutputStream fos = new FileOutputStream("out/" + s[s.length - 1] + ".java")) {
+          fos.write(aClass.getBytes());
+        }
+      } catch (final IOException e) {
+        e.printStackTrace();
       }
     }
 
