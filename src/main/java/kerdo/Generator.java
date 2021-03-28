@@ -46,7 +46,8 @@ public class Generator {
     final Pattern classNamePattern = Pattern.compile("^(Peaklass|(Abstraktsel )?(([Kk]lass(il)?)|Liides) (\\w+))");
     final Pattern implementsPattern = Pattern.compile("([Kk]lass (\\w+))? ?realiseerib liidest (\\w+)");
     final Pattern extendsPattern = Pattern.compile("(\\w+) alamklass");
-    final Pattern methodPattern = Pattern.compile("(abstraktne )?((\\w+)-tüüpi )?( ?\\w+ ?)?[Mm]eetod(it)? (\\w+)");
+    final Pattern methodPattern = Pattern.compile("(abstraktne )?((\\w+)-tüüpi )?( ?\\w+ ?)?[Mm]eetod(it)? (\\w+),? ([\\w õäöü,\\(\\)]*)\\.");
+    final Pattern argumentPattern = Pattern.compile("(\\w+) \\((\\w+)\\)");
 
     for (final String section : sections) {
       Matcher m = classNamePattern.matcher(section);
@@ -89,13 +90,24 @@ public class Generator {
 
       m = methodPattern.matcher(section);
 
-      while(m.find()) {
+      while (m.find()) {
         final String returnType = m.group(3) != null ? m.group(3) : "void";
         final String methodName = m.group(6);
 
-        if(methodName == null) continue;
+        if (methodName == null) continue;
 
-        methods.append(String.format("public %s %s() {}%n", returnType, methodName));
+        final String argumentsSpec = m.group(7);
+        final StringBuilder arguments = new StringBuilder();
+
+        final Matcher am = argumentPattern.matcher(argumentsSpec);
+
+        while (am.find()) {
+          final String argumentType = am.group(2);
+          final String argumentName = am.group(1);
+          arguments.append(String.format("final %s %s,", argumentType, argumentName));
+        }
+
+        methods.append(String.format("public %s %s(%s) {}%n", returnType, methodName, arguments.substring(0, arguments.length() > 0 ? (arguments.length() - 1) : 0)));
       }
 
       final var aClass = ClassGenerator.generate(
