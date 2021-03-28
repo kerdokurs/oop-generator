@@ -35,7 +35,7 @@ public class Generator {
           fos.write(source.getBytes());
         }
       } catch (final IOException e) {
-        e.printStackTrace();
+        logger.warning(String.format("an unknown error has occurred while trying to write a class to disk: %s", e));
       }
     });
   }
@@ -46,6 +46,7 @@ public class Generator {
     final Pattern classNamePattern = Pattern.compile("^(Peaklass|(Abstraktsel )?(([Kk]lass(il)?)|Liides) (\\w+))");
     final Pattern implementsPattern = Pattern.compile("([Kk]lass (\\w+))? ?realiseerib liidest (\\w+)");
     final Pattern extendsPattern = Pattern.compile("(\\w+) alamklass");
+    final Pattern methodPattern = Pattern.compile("(abstraktne )?((\\w+)-tüüpi )?( ?\\w+ ?)?[Mm]eetod(it)? (\\w+)");
 
     for (final String section : sections) {
       Matcher m = classNamePattern.matcher(section);
@@ -55,6 +56,10 @@ public class Generator {
       String className = "";
       String implement = "";
       String extend = "";
+
+      // TODO: Implement this.
+      String varNames = "";
+      StringBuilder methods = new StringBuilder();
 
       if (m.find()) {
 //        System.out.printf("%s, %s, %s%n", m.group(1), m.group(2), m.group(4));
@@ -82,6 +87,17 @@ public class Generator {
         extend = "extends " + m.group(1);
       }
 
+      m = methodPattern.matcher(section);
+
+      while(m.find()) {
+        final String returnType = m.group(3) != null ? m.group(3) : "void";
+        final String methodName = m.group(6);
+
+        if(methodName == null) continue;
+
+        methods.append(String.format("public %s %s() {}%n", returnType, methodName));
+      }
+
       final var aClass = ClassGenerator.generate(
         templates.get("class"),
         isAbstract,
@@ -89,8 +105,9 @@ public class Generator {
         className,
         extend,
         implement,
+        varNames,
         "",
-        ""
+        methods.toString()
       );
 
       final String[] classNameTokens = className.split(" ");

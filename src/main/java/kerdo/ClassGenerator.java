@@ -9,6 +9,7 @@ public class ClassGenerator {
       final String extend,
       final String implement,
       final String varNames,
+      final String constructor,
       final String methods
   ) {
     return source
@@ -18,6 +19,7 @@ public class ClassGenerator {
         .replace("{$extends}", extend)
         .replace("{$implements}", implement)
         .replace("{$varNames}", varNames)
+        .replace("{$constructor}", constructor)
         .replace("{$methods}", methods);
   }
 }

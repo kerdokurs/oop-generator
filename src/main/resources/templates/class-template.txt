@@ -1,5 +1,14 @@
+/**
+ * Klass: {$className}
+ * Autor: Kerdo Kurs
+ *
+ * Genereeritud, kasutades oop-generatorit.
+ * https://github.com/kerdokurs/oop-generator
+ */
 public {$abstract} {$class} {$className} {$extends} {$implements} {
     {$varNames}
+
+    {$constructor}
 
     {$methods}
 }
