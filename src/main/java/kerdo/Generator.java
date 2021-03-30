@@ -1,5 +1,10 @@
 package kerdo;
 
+import kerdo.g.Argument;
+import kerdo.g.Extendable;
+import kerdo.g.Interface;
+import kerdo.g.Method;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -9,12 +14,21 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Generator {
+  public static final String COMMENT = "/**\n" +
+    " * Klass: $\n" +
+    " * Autor: Kerdo Kurs\n" +
+    " * \n" +
+    " * Genereeritud, kasutades oop-generatorit\n" +
+    " * https://github.com/kerdokurs/oop-generator\n" +
+    " */\n";
+
   private final Logger logger = Logger.getLogger(getClass().getSimpleName());
 
   private final Map<String, String> templates = new HashMap<>();
   private final List<String> sections = new ArrayList<>();
 
-  private final Map<String, String> classes = new HashMap<>();
+  private final Map<String, Interface> interfaces = new HashMap<>();
+  private final Map<String, GClass> classes = new HashMap<>();
 
   public static void main(final String[] args) {
     final Generator generator = new Generator();
@@ -29,15 +43,26 @@ public class Generator {
   }
 
   private void writeClasses() {
-    classes.forEach((className, source) -> {
-      try {
-        try (FileOutputStream fos = new FileOutputStream("out/" + className + ".java")) {
-          fos.write(source.getBytes());
-        }
-      } catch (final IOException e) {
-        logger.warning(String.format("an unknown error has occurred while trying to write a class to disk: %s", e));
-      }
-    });
+//    final GClass gClass = new GClass("Teos", true, null, null);
+//    final Method gMethod = new Method("test", "void");
+//    gMethod.addArgument(new Argument("String", "name"));
+//    gMethod.addArgument(new Argument("int", "num"));
+//    gClass.addMethod(gMethod);
+//    try (final FileOutputStream fos = new FileOutputStream("out/Teos.java")) {
+//      fos.write(gClass.toString().getBytes());
+//    } catch (final IOException e) {
+//      e.printStackTrace();
+//    }
+    interfaces.forEach((className, inte) -> writeToFile(className, inte.toString()));
+    classes.forEach((className, gClass) -> writeToFile(className, gClass.toString()));
+  }
+
+  private void writeToFile(final String className, final String data) {
+    try (final FileOutputStream fos = new FileOutputStream("out/" + className + ".java")) {
+      fos.write(data.getBytes());
+    } catch (IOException e) {
+      logger.warning(String.format("an unknown error has occurred while trying to write a class to disk: %s", e));
+    }
   }
 
   private void parseSections() {
@@ -60,7 +85,6 @@ public class Generator {
 
       // TODO: Implement this.
       String varNames = "";
-      StringBuilder methods = new StringBuilder();
 
       if (m.find()) {
 //        System.out.printf("%s, %s, %s%n", m.group(1), m.group(2), m.group(4));
@@ -69,7 +93,8 @@ public class Generator {
         isAbstract = m.group(1).toLowerCase().contains("abstrakt");
         classType = m.group(3) != null ? (m.group(3).toLowerCase().contains("klass") ? "class" : "interface") : "";
 //        System.out.println(m.group());
-        className = m.group(6) != null ? m.group(6) : "class " + m.group();
+        className = m.group(6) != null ? m.group(6) : m.group();
+        System.out.println("className = " + className);
 //        System.out.printf("abs=%s,type=%s,name=%s%n", isAbstract, classType, className);
 
       }
@@ -79,16 +104,20 @@ public class Generator {
       m = implementsPattern.matcher(section);
 
       if (m.find()) {
-        implement = "implements " + m.group(2);
+        implement = m.group(2);
       }
 
       m = extendsPattern.matcher(section);
 
       if (m.find()) {
-        extend = "extends " + m.group(1);
+        extend = m.group(1);
       }
 
+      System.out.println("extend = " + extend);
+
       m = methodPattern.matcher(section);
+
+      final List<Method> methods = new ArrayList<>();
 
       while (m.find()) {
         final String returnType = m.group(3) != null ? m.group(3) : "void";
@@ -97,34 +126,37 @@ public class Generator {
         if (methodName == null) continue;
 
         final String argumentsSpec = m.group(7);
-        final StringBuilder arguments = new StringBuilder();
 
         final Matcher am = argumentPattern.matcher(argumentsSpec);
+
+        Method method = new Method(methodName, returnType);
 
         while (am.find()) {
           final String argumentType = am.group(2);
           final String argumentName = am.group(1);
-          arguments.append(String.format("final %s %s,", argumentType, argumentName));
+
+          method.addArgument(new Argument(argumentType, argumentName));
         }
 
-        methods.append(String.format("public %s %s(%s) {}%n", returnType, methodName, arguments.substring(0, arguments.length() > 0 ? (arguments.length() - 1) : 0)));
+        methods.add(method);
       }
 
-      final var aClass = ClassGenerator.generate(
-        templates.get("class"),
-        isAbstract,
-        classType,
-        className,
-        extend,
-        implement,
-        varNames,
-        "",
-        methods.toString()
-      );
+      if ("interface".equals(classType)) {
+        final Interface intr = new Interface(className);
 
-      final String[] classNameTokens = className.split(" ");
+        intr.getMethods().addAll(methods);
 
-      classes.put(classNameTokens[classNameTokens.length - 1], aClass);
+        interfaces.put(className, intr);
+      } else {
+        final Extendable exte = classes.get(extend);
+        Interface impl = interfaces.get(implement);
+
+        final GClass gClass = new GClass(className, isAbstract, exte, impl);
+
+        gClass.getMethods().addAll(methods);
+
+        classes.put(className, gClass);
+      }
     }
 
     logger.info("parsing sections finished");
